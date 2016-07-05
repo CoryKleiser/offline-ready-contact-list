@@ -2,6 +2,12 @@
 
 function createContact(name, email, phone) {
   // TODO: Create li element and return
+  const contactName = $(`<li></li>`);
+  return contactName;
+  const contactEmail = $(`<li></li>`);
+  return contactPhone;
+  const contactPhone = $(`<li></li>`);
+  return contactPhone;
 }
 
 function handleNewContactSubmit(ev) {
