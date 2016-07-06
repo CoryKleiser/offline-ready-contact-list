@@ -35,12 +35,13 @@ $(`document`).ready(function(){
     else {
       // TODO: Save to offline storage (localStorage, IndexedDB, PouchDB)
       const newContact = {
+        _id: contactName,
         name: contactName,
         email: contactEmail,
         phone: contactPhone
       };
       console.log(newContact);
-      localData.post(newContact).then(function (result) {
+      localData.put(newContact).then(function (result) {
         console.log(`Successfully Posted to Offline Storage`);
       }).catch(function (err) {
         console.log(`ERROR:: Did not Post to Offline Storage`);
@@ -61,13 +62,13 @@ $(`document`).ready(function(){
     include_docs: true,
     attachments: true
   }).then(function (result) {
-  }).catch(function (err) {
     $(result.rows).each(function () {
       // TODO: Create contacts for each record
       const savedContact = createContact(this.doc);
       // TODO: Append contacts (li elements) to ul#contactList
       $(`#contactList`).append(savedContact);
     });
+  }).catch(function (err) {
     console.log(`error loading saved contacts`);
     console.log(err);
   });
