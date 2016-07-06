@@ -1,4 +1,5 @@
-"use strict";
+//"use strict";
+//Having issues in Safari when "use strict"
 $(`document`).ready(function(){
   const inputName = $(`#inputName`);
   const inputEmail = $(`#inputEmail`);
