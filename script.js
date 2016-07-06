@@ -35,13 +35,12 @@ $(`document`).ready(function(){
     else {
       // TODO: Save to offline storage (localStorage, IndexedDB, PouchDB)
       const newContact = {
-        _id: contactName,
         name: contactName,
         email: contactEmail,
         phone: contactPhone
       };
       console.log(newContact);
-      localData.put(newContact).then(function (result) {
+      localData.post(newContact).then(function (result) {
         console.log(`Successfully Posted to Offline Storage`);
       }).catch(function (err) {
         console.log(`ERROR:: Did not Post to Offline Storage`);
