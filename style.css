@@ -1,1 +1,18 @@
-/* Optional: Style contact li to look a little cleaner */
+body{
+    background-color: black;
+    color: lime;
+}
+
+.form-control{
+    background-color: transparent;
+    color: lime;
+    border-color: slategrey;
+}
+
+ul{
+    text-align: center;
+}
+
+.btn-success{
+    background-image: linear-gradient(to bottom,lime 0,#419641 100%);
+}
