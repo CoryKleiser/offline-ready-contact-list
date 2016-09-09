@@ -91,6 +91,8 @@ $(document).ready(function(){
 
          postDataOffline(newContact);
 
+         postDataOnline(newContact);
+
 
        // : Create contact (li element)
          const newContactItem = createContact(newContact);

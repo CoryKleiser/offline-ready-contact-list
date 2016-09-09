@@ -1,3 +1,11 @@
 {
-  "contacts": []
+  "contacts": [
+    {
+      "_id": "CORY",
+      "name": "CORY",
+      "email": "kleisecj@mail.uc.edu",
+      "phone": 9375102944,
+      "id": 1
+    }
+  ]
 }
