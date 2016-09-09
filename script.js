@@ -1,25 +1,37 @@
-//"use strict";
+"use strict";
 //Having issues in Safari when "use strict"
-$(`document`).ready(function(){
+$(document).ready(function(){
+
+
+
+  //: get input fields
   const inputName = $(`#inputName`);
   const inputEmail = $(`#inputEmail`);
   const inputPhone = $(`#inputPhone`);
+
+  //:set validation regex
   const emailValidate = /^(\S+@)+(\S*\.)?uc\.edu$/i;
   const phoneValidate = /^\+?[0-9]*(\([0-9]*\))?[0-9-]*[0-9]$/;
+
+
   //used for npm install //const PouchDB = require(`pouchdb`);
   const localData = new PouchDB(`contactList`);
 
+
+  //: Creates Contact Element
   function createContact(contact) {
-    // TODO: Create li element and return
+    // : Create li element and return
     const li = $(`<li></li>`);
     $(li).append(contact.name, `<br>`, contact.email, `<br>`, contact.phone);
     return li;
   }
 
+
+  //: Handles new contact submit
   function handleNewContactSubmit(ev) {
     ev.preventDefault();
 
-    // TODO: Validate email and phone
+    // : Validate email and phone
     const contactName = $(`[id="inputName"]`).val();
     const contactEmail = $(`[id="inputEmail"]`).val();
     const contactPhone = $(`[id="inputPhone"]`).val();
@@ -33,7 +45,7 @@ $(`document`).ready(function(){
       alert(`Please enter a valid phone number`);
     }
     else {
-      // TODO: Save to offline storage (localStorage, IndexedDB, PouchDB)
+      // : Save to offline storage (PouchDB)
       const newContact = {
         _id: contactName,
         name: contactName,
@@ -41,6 +53,8 @@ $(`document`).ready(function(){
         phone: contactPhone
       };
       console.log(newContact);
+
+      //Add to offline storage
       localData.put(newContact).then(function (result) {
         console.log(`Successfully Posted to Offline Storage`);
       }).catch(function (err) {
@@ -49,23 +63,23 @@ $(`document`).ready(function(){
       });
 
 
-      // TODO: Create contact (li element)
+      // : Create contact (li element)
       const newContactItem = createContact(newContact);
 
-      // TODO: Append contact to ul#contactList
+      // : Append contact to ul#contactList
       $(`#contactList`).append(newContactItem);
     }
   }
 
-  // TODO: Load contacts from offline storage (localStorage, IndexedDB, PouchDB)
+  // : Load contacts from offline storage (PouchDB)
   localData.allDocs({
     include_docs: true,
     attachments: true
   }).then(function (result) {
     $(result.rows).each(function () {
-      // TODO: Create contacts for each record
+      // : Create contacts for each record
       const savedContact = createContact(this.doc);
-      // TODO: Append contacts (li elements) to ul#contactList
+      // : Append contacts (li elements) to ul#contactList
       $(`#contactList`).append(savedContact);
     });
   }).catch(function (err) {
@@ -75,6 +89,6 @@ $(`document`).ready(function(){
 
 
 
-  // TODO: Add submit event listener to form#contactForm and use handleNewContactSubmit
+  // : Add submit event listener to form#contactForm and use handleNewContactSubmit
   $(`#contactForm`).on(`submit`, handleNewContactSubmit);
 });
