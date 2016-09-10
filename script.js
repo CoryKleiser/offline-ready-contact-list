@@ -26,8 +26,10 @@ $(document).ready(function(){
      */
   function createContact(contact) {
     // : Create li element and return
-    const li = $(`<li></li>`);
-    $(li).append(contact.name, `<br>`, contact.email, `<br>`, contact.phone);
+    const li = $(`<li><input type="radio" name="contacts" value="${contact.id}" class="pull-left" unchecked></li>`);
+    $(li).append(`&nbsp;&nbsp;<strong>${contact.name}</strong><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${contact.phone}<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>${contact.email}</em>`);
     return li;
   }
 
@@ -55,6 +57,14 @@ $(document).ready(function(){
     function postDataOnline(newContact){
         //Add to online storage
         $.post(`http://localhost:3000/contacts`, newContact);
+    }
+
+    function deleteData(contactToDelete){
+        const json = 'http://localhost:3000/contacts';
+        console.log(json);
+        const key = contactToDelete;
+        console.log(key);
+        delete json[key]
     }
 
 
@@ -102,11 +112,21 @@ $(document).ready(function(){
      }
   }
 
+    /**
+     * deletes selected contact
+     */
+    function handleContactDelete(){
+        let deletion = $(`input[name="contacts"]:checked`).val();
+        console.log(deletion);
+        deletion = deletion - 1;
+        deleteData(deletion);
+    }
+
   // : Load contacts from offline storage (PouchDB)
     /**
      * Loads Contacts from online or offline storage.
      */
-    function loadContacts() {
+    function loadContactsOffline() {
         localData.allDocs({
             include_docs: true,
             attachments: true
@@ -123,8 +143,25 @@ $(document).ready(function(){
         });
     }
 
+    function loadContacts(){
+        console.log("hello!");
+        $.getJSON('http://localhost:3000/contacts', function(data) {
+            console.log(data);
+            console.log("test");
+            $.each(data, function (k, v) {
+                console.log("test Loop");
+                console.log(k);
+                console.log(v);
+                const savedContact = createContact(v);
+                console.log(savedContact);
+                $(`#contactList`).append(savedContact);
+            });
+        });
+    }
+
     loadContacts();
 
   // : Add submit event listener to form#contactForm and use handleNewContactSubmit
     $(`#contactForm`).on(`submit`, handleNewContactSubmit);
+    $(`#delete`).click(handleContactDelete);
 });
