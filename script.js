@@ -26,10 +26,13 @@ $(document).ready(function(){
      */
   function createContact(contact) {
     // : Create li element and return
-    const li = $(`<li><input type="radio" name="contacts" value="${contact.id}" class="pull-left" unchecked></li>`);
-    $(li).append(`&nbsp;&nbsp;<strong>${contact.name}</strong><br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${contact.phone}<br>
-        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<em>${contact.email}</em>`);
+    const li = $(`<li>&nbsp;&nbsp;</li>`);
+    $(li).append(`<strong>${contact.name}</strong><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`);
+    $(li).append(`${contact.phone}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`);
+    $(li).append(`<em>${contact.email}</em>&nbsp;&nbsp;`);
+    $(li).append(`<button class="delete">Delete</button>`);
+        //TODO: btn classes not being applied to last instance
+    $(`.delete`).addClass(`btn btn-default btn-xs`)
     return li;
   }
 
@@ -143,23 +146,32 @@ $(document).ready(function(){
         });
     }
 
-    function loadContacts(){
+    function loadContactsOnline(){
         console.log("hello!");
-        $.getJSON('http://localhost:3000/contacts', function(data) {
-            console.log(data);
-            console.log("test");
-            $.each(data, function (k, v) {
-                console.log("test Loop");
-                console.log(k);
-                console.log(v);
-                const savedContact = createContact(v);
-                console.log(savedContact);
-                $(`#contactList`).append(savedContact);
+        try {
+            $.getJSON('http://localhost:3000/contacts', function (data) {
+                console.log(data);
+                console.log("test");
+                $.each(data, function (k, v) {
+                    console.log("test Loop");
+                    console.log(k);
+                    console.log(v);
+                    const savedContact = createContact(v);
+                    console.log(savedContact);
+                    $(`#contactList`).append(savedContact);
+                });
             });
-        });
+        }
+        catch (er){
+            loadContactsOffline();
+            console.log(er);
+        }
     }
 
-    loadContacts();
+    //TODO: catch error and load offline if needed.
+    loadContactsOnline()
+
+
 
   // : Add submit event listener to form#contactForm and use handleNewContactSubmit
     $(`#contactForm`).on(`submit`, handleNewContactSubmit);
