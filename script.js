@@ -1,6 +1,6 @@
 "use strict";
 //Having issues in Safari when "use strict"
-$(document).ready(function(){
+$(window).ready(function(){
 
 
 
@@ -24,17 +24,19 @@ $(document).ready(function(){
      * @param contact
      * @returns {*|jQuery|HTMLElement}
      */
-  function createContact(contact) {
+    function createContact(contact) {
     // : Create li element and return
-    const li = $(`<li>&nbsp;&nbsp;</li>`);
-    $(li).append(`<strong>${contact.name}</strong><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`);
-    $(li).append(`${contact.phone}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`);
-    $(li).append(`<em>${contact.email}</em>&nbsp;&nbsp;`);
-    $(li).append(`<button class="delete">Delete</button>`);
-        //TODO: btn classes not being applied to last instance
-    $(`.delete`).addClass(`btn btn-default btn-xs`)
-    return li;
-  }
+        const count = $(`li`).length;
+        console.log(count);
+        const li = $(`<li>&nbsp;&nbsp;</li>`);
+        $(li).append(`<strong>${contact.name}</strong><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`);
+        $(li).append(`${contact.phone}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`);
+        $(li).append(`<em>${contact.email}</em>&nbsp;&nbsp;`);
+        $(li).append(`<button id="${count}">Delete</button>`);
+            //TODO: btn classes not being applied to last instance
+
+        return li;
+    }
 
 
     /**
@@ -62,13 +64,7 @@ $(document).ready(function(){
         $.post(`http://localhost:3000/contacts`, newContact);
     }
 
-    function deleteData(contactToDelete){
-        const json = 'http://localhost:3000/contacts';
-        console.log(json);
-        const key = contactToDelete;
-        console.log(key);
-        delete json[key]
-    }
+
 
 
     /**
@@ -115,14 +111,40 @@ $(document).ready(function(){
      }
   }
 
+
     /**
-     * deletes selected contact
+     * delete contact from json
+     * @param contactToDelete
      */
-    function handleContactDelete(){
-        let deletion = $(`input[name="contacts"]:checked`).val();
+    function deleteData(contactToDelete){
+        try {
+            $.getJSON('http://localhost:3000/contacts', function (data) {
+                console.log(data);
+                console.log(contactToDelete);
+                data.splice(contactToDelete, 1);
+            })
+        }
+        catch(er){
+            console.log(er);
+            alert(`Please wait till you are online to make deletions.`)
+        }
+    }
+
+    /**
+     * deletes contact
+     */
+    function handleContactDelete(ev){
+
+        ev.preventDefault();
+        console.log(ev);
+
+        const deletion = $(ev.target);
+        console.log(ev.target);
         console.log(deletion);
-        deletion = deletion - 1;
-        deleteData(deletion);
+        const dataId = deletion.attr(`id`);
+        console.log(dataId);
+        deleteData(dataId);
+        deletion.parent().remove();
     }
 
   // : Load contacts from offline storage (PouchDB)
@@ -140,6 +162,7 @@ $(document).ready(function(){
                 // : Append contacts (li elements) to ul#contactList
                 $(`#contactList`).append(savedContact);
             });
+            $(`button`).addClass(`btn btn-default btn-xs`);
         }).catch(function (err) {
             console.log(`error loading saved contacts`);
             console.log(err);
@@ -160,6 +183,9 @@ $(document).ready(function(){
                     console.log(savedContact);
                     $(`#contactList`).append(savedContact);
                 });
+                $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
+                //attach delete handler
+                $(`.delete`).on(`click`, handleContactDelete);
             });
         }
         catch (er){
@@ -169,11 +195,11 @@ $(document).ready(function(){
     }
 
     //TODO: catch error and load offline if needed.
-    loadContactsOnline()
+    loadContactsOnline();
 
 
 
   // : Add submit event listener to form#contactForm and use handleNewContactSubmit
     $(`#contactForm`).on(`submit`, handleNewContactSubmit);
-    $(`#delete`).click(handleContactDelete);
+
 });
