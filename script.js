@@ -130,7 +130,7 @@ $(window).ready(function(){
         }
     }
 
-    /**
+    /**TODO: delete content off online server
      * deletes contact
      */
     function handleContactDelete(ev){
@@ -188,9 +188,9 @@ $(window).ready(function(){
                 $(`.delete`).on(`click`, handleContactDelete);
             });
         }
-        catch (er){
+        catch (ex){
             loadContactsOffline();
-            console.log(er);
+            console.log(ex);
         }
     }
 
