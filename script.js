@@ -120,6 +120,7 @@ $(window).ready(function(){
 
        // : Append contact to ul#contactList
          $(`#contactList`).append(newContactItem);
+         $(`.form-control`).val(``);
      }
         //add classes to button
         $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
