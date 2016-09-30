@@ -1,18 +1,1 @@
-{
-  "contacts": [
-    {
-      "_id": "Cory",
-      "name": "Cory",
-      "email": "kleisecj@mail.uc.edu",
-      "phone": "(937)510-2944",
-      "id": 1
-    },
-    {
-      "_id": "Jon",
-      "name": "Jon",
-      "email": "jamesjd@mail.uc.edu",
-      "phone": "(513)857-8663",
-      "id": 2
-    }
-  ]
-}
+[]

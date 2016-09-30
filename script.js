@@ -15,7 +15,38 @@ $(window).ready(function(){
 
 
   //used for npm install //const PouchDB = require(`pouchdb`);
-  const localData = new PouchDB(`contactList`);
+    const localData = new PouchDB(`contactList`);
+    const remoteData = new PouchDB('http://localhost:5984/contactlist');
+
+
+    /*
+     * get database info
+     */
+    localData.info().then(function (info) {
+        console.log(info);
+    });
+    remoteData.info().then(function (info) {
+        console.log(info);
+    });
+
+    //TODO: sync local db to online db
+    //FIXME:
+    var replicationHandler = localData.replicate.to(remoteData, {
+        live: true,
+        retry: true
+    });
+
+    replicationHandler.on('complete', function (info) {
+        alert(`Cannot sync to your online storage. Please try again later`)
+    }).on('paused', function (info) {
+        console.log(info);
+        console.log(`sync paused`);
+    }).on('active', function (info) {
+        // replication was resumed
+    }).on('error', function (err) {
+        replicationHandler.cancel();
+    });
+
 
 
     /**
@@ -32,7 +63,7 @@ $(window).ready(function(){
         $(li).append(`<strong>${contact.name}</strong><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`);
         $(li).append(`${contact.phone}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`);
         $(li).append(`<em>${contact.email}</em>&nbsp;&nbsp;`);
-        $(li).append(`<button id="${count}">Delete</button>`);
+        $(li).append(`<button id="${contact._id}">Delete</button>`);
             //TODO: btn classes not being applied to last instance
 
         return li;
@@ -52,16 +83,6 @@ $(window).ready(function(){
             console.log(`ERROR:: Did not Post to Offline Storage`);
             console.log(err);
         });
-    }
-
-    /**
-     * Posts new contact to online storage
-     *
-     * @param newContact
-     */
-    function postDataOnline(newContact){
-        //Add to online storage
-        $.post(`http://localhost:3000/contacts`, newContact);
     }
 
 
@@ -100,8 +121,6 @@ $(window).ready(function(){
 
          postDataOffline(newContact);
 
-         postDataOnline(newContact);
-
 
        // : Create contact (li element)
          const newContactItem = createContact(newContact);
@@ -113,24 +132,22 @@ $(window).ready(function(){
 
 
     /**
-     * delete contact from json
+     * :delete data off local db
      * @param contactToDelete
      */
-    function deleteData(contactToDelete){
-        try {
-            $.getJSON('http://localhost:3000/contacts', function (data) {
-                console.log(data);
-                console.log(contactToDelete);
-                data.splice(contactToDelete, 1);
-            })
-        }
-        catch(er){
+    function deleteData(contactToDelete) {
+        //todo: take logs out
+        console.log(`to be deleted: ${contactToDelete}`);
+        localData.get(contactToDelete).then(function (doc) {
+            console.log(doc);
+            return localData.remove(doc._id, doc._rev);
+        }).catch(function (er) {
             console.log(er);
-            alert(`Please wait till you are online to make deletions.`)
-        }
+            alert(`Error! Unable to delete contact!`);
+        })
     }
 
-    /**TODO: delete content off online server
+    /**TODO: delete content off db
      * deletes contact
      */
     function handleContactDelete(ev){
@@ -156,47 +173,52 @@ $(window).ready(function(){
             include_docs: true,
             attachments: true
         }).then(function (result) {
+            console.log(result);
             $(result.rows).each(function () {
                 // : Create contacts for each record
                 const savedContact = createContact(this.doc);
                 // : Append contacts (li elements) to ul#contactList
                 $(`#contactList`).append(savedContact);
             });
-            $(`button`).addClass(`btn btn-default btn-xs`);
+            $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
+            //attach delete handler
+            $(`.delete`).on(`click`, handleContactDelete);
         }).catch(function (err) {
             console.log(`error loading saved contacts`);
             console.log(err);
         });
     }
 
-    function loadContactsOnline(){
-        console.log("hello!");
-        try {
-            $.getJSON('http://localhost:3000/contacts', function (data) {
-                console.log(data);
-                console.log("test");
-                $.each(data, function (k, v) {
-                    console.log("test Loop");
-                    console.log(k);
-                    console.log(v);
-                    const savedContact = createContact(v);
-                    console.log(savedContact);
-                    $(`#contactList`).append(savedContact);
-                });
-                $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
-                //attach delete handler
-                $(`.delete`).on(`click`, handleContactDelete);
-            });
-        }
-        catch (ex){
-            loadContactsOffline();
-            console.log(ex);
-        }
-    }
 
-    //TODO: catch error and load offline if needed.
-    loadContactsOnline();
 
+    // function loadContactsOnline(){
+    //     console.log("hello!");
+    //     try {
+    //         $.getJSON('http://localhost:3000/contacts', function (data) {
+    //             console.log(data);
+    //             console.log("test");
+    //             $.each(data, function (k, v) {
+    //                 console.log("test Loop");
+    //                 console.log(k);
+    //                 console.log(v);
+    //                 const savedContact = createContact(v);
+    //                 console.log(savedContact);
+    //                 $(`#contactList`).append(savedContact);
+    //                 $(`.delete`).on(`click`, handleContactDelete);
+    //             });
+    //             $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
+    //             //attach delete handler
+    //             $(`.delete`).on(`click`, handleContactDelete);
+    //         });
+    //     }
+    //     catch (ex){
+    //         loadContactsOffline();
+    //         console.log(ex);
+    //     }
+    // }
+
+    //TODO: catch error and load online/offline if needed.
+    loadContactsOffline();
 
 
   // : Add submit event listener to form#contactForm and use handleNewContactSubmit
