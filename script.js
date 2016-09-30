@@ -1,7 +1,7 @@
 "use strict";
 //Having issues in Safari when "use strict"
 $(window).ready(function(){
-//TODO:MERGE TO MASTER
+
 
 
   //: get input fields
@@ -42,7 +42,7 @@ $(window).ready(function(){
     }).on('change', function (change) {
         console.log(`update remote db`)
     }).on('paused', function (info) {
-        console.log(`sync paused check connection`)
+        console.log(`sync paused: wait for change/check connection`)
     }).on('active', function (info) {
         console.log(`sync resumed`)
     }).on('error', function (err) {
@@ -152,7 +152,7 @@ $(window).ready(function(){
         })
     }
 
-    /**TODO: delete content off db
+    /**: delete content off db
      * deletes contact
      */
     function handleContactDelete(ev){
@@ -225,7 +225,7 @@ $(window).ready(function(){
         });
     }
 
-    //TODO: catch error and load online/offline if needed.
+    //: catch error and load online/offline if needed.
     loadContactsOffline();
 
 
