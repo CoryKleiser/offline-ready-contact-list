@@ -1,7 +1,7 @@
 "use strict";
 //Having issues in Safari when "use strict"
 $(window).ready(function(){
-
+//TODO:MERGE TO MASTER
 
 
   //: get input fields
@@ -31,22 +31,23 @@ $(window).ready(function(){
 
     //TODO: sync local db to online db
     //FIXME:
-    var replicationHandler = localData.replicate.to(remoteData, {
+    // var replicationHandler = localData.sync.to(remoteData, {
+    //     live: true,
+    //     retry: true
+    // });
+
+    localData.sync(remoteData, {
         live: true,
         retry: true
-    });
-
-    replicationHandler.on('complete', function (info) {
-        alert(`Cannot sync to your online storage. Please try again later`)
+    }).on('change', function (change) {
+        console.log(`update remote db`)
     }).on('paused', function (info) {
-        console.log(info);
-        console.log(`sync paused`);
+        console.log(`sync paused check connection`)
     }).on('active', function (info) {
-        // replication was resumed
+        console.log(`sync resumed`)
     }).on('error', function (err) {
-        replicationHandler.cancel();
+        console.log(`error: try again later`);
     });
-
 
 
     /**
@@ -128,7 +129,11 @@ $(window).ready(function(){
        // : Append contact to ul#contactList
          $(`#contactList`).append(newContactItem);
      }
-  }
+        //add classes to button
+        $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
+        //attach delete handler
+        $(`.delete`).on(`click`, handleContactDelete);
+    }
 
 
     /**
