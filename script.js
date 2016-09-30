@@ -29,13 +29,7 @@ $(window).ready(function(){
         console.log(info);
     });
 
-    //TODO: sync local db to online db
-    //FIXME:
-    // var replicationHandler = localData.sync.to(remoteData, {
-    //     live: true,
-    //     retry: true
-    // });
-
+    //: sync local db to online db
     localData.sync(remoteData, {
         live: true,
         retry: true
@@ -65,8 +59,6 @@ $(window).ready(function(){
         $(li).append(`${contact.phone}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`);
         $(li).append(`<em>${contact.email}</em>&nbsp;&nbsp;`);
         $(li).append(`<button id="${contact._id}">Delete</button>`);
-            //TODO: btn classes not being applied to last instance
-
         return li;
     }
 
