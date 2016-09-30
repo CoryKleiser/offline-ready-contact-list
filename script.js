@@ -10,6 +10,7 @@ $(window).ready(function(){
   const inputPhone = $(`#inputPhone`);
 
   //:set validation regex
+    //TODO:update regex to include all emails
   const emailValidate = /^(\S+@)+(\S*\.)?uc\.edu$/i;
   const phoneValidate = /^\+?[0-9]*(\([0-9]*\))?[0-9-]*[0-9]$/;
 
