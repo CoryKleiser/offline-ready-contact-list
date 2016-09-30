@@ -179,12 +179,18 @@ $(window).ready(function(){
             attachments: true
         }).then(function (result) {
             console.log(result);
-            $(result.rows).each(function () {
-                // : Create contacts for each record
-                const savedContact = createContact(this.doc);
-                // : Append contacts (li elements) to ul#contactList
-                $(`#contactList`).append(savedContact);
-            });
+            console.log(result.rows.length);
+            if(result.rows.length == 0){
+                loadRemoteData();
+            }
+            else {
+                $(result.rows).each(function () {
+                    // : Create contacts for each record
+                    const savedContact = createContact(this.doc);
+                    // : Append contacts (li elements) to ul#contactList
+                    $(`#contactList`).append(savedContact);
+                });
+            }
             $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
             //attach delete handler
             $(`.delete`).on(`click`, handleContactDelete);
@@ -196,31 +202,28 @@ $(window).ready(function(){
 
 
 
-    // function loadContactsOnline(){
-    //     console.log("hello!");
-    //     try {
-    //         $.getJSON('http://localhost:3000/contacts', function (data) {
-    //             console.log(data);
-    //             console.log("test");
-    //             $.each(data, function (k, v) {
-    //                 console.log("test Loop");
-    //                 console.log(k);
-    //                 console.log(v);
-    //                 const savedContact = createContact(v);
-    //                 console.log(savedContact);
-    //                 $(`#contactList`).append(savedContact);
-    //                 $(`.delete`).on(`click`, handleContactDelete);
-    //             });
-    //             $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
-    //             //attach delete handler
-    //             $(`.delete`).on(`click`, handleContactDelete);
-    //         });
-    //     }
-    //     catch (ex){
-    //         loadContactsOffline();
-    //         console.log(ex);
-    //     }
-    // }
+    function loadRemoteData(){
+        console.log("hello!");
+        remoteData.allDocs({
+            include_docs: true,
+            attachments: true
+        }).then(function (result) {
+            console.log(result);
+            console.log(result.rows.length);
+            $(result.rows).each(function () {
+                // : Create contacts for each record
+                const savedContact = createContact(this.doc);
+                // : Append contacts (li elements) to ul#contactList
+                $(`#contactList`).append(savedContact);
+                $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
+                //attach delete handler
+                $(`.delete`).on(`click`, handleContactDelete);
+            });
+        }).catch(function (err) {
+            console.log(`error loading remote contacts`);
+            console.log(err);
+        });
+    }
 
     //TODO: catch error and load online/offline if needed.
     loadContactsOffline();
