@@ -1,7 +1,7 @@
 "use strict";
 //Having issues in Safari when "use strict"
-$(document).ready(function(){
-
+$(window).ready(function(){
+//TODO:MERGE TO MASTER
 
 
   //: get input fields
@@ -15,80 +15,218 @@ $(document).ready(function(){
 
 
   //used for npm install //const PouchDB = require(`pouchdb`);
-  const localData = new PouchDB(`contactList`);
+    const localData = new PouchDB(`contactList`);
+    const remoteData = new PouchDB('http://localhost:5984/contactlist');
 
 
-  //: Creates Contact Element
-  function createContact(contact) {
+    /*
+     * get database info
+     */
+    localData.info().then(function (info) {
+        console.log(info);
+    });
+    remoteData.info().then(function (info) {
+        console.log(info);
+    });
+
+    //TODO: sync local db to online db
+    //FIXME:
+    // var replicationHandler = localData.sync.to(remoteData, {
+    //     live: true,
+    //     retry: true
+    // });
+
+    localData.sync(remoteData, {
+        live: true,
+        retry: true
+    }).on('change', function (change) {
+        console.log(`update remote db`)
+    }).on('paused', function (info) {
+        console.log(`sync paused check connection`)
+    }).on('active', function (info) {
+        console.log(`sync resumed`)
+    }).on('error', function (err) {
+        console.log(`error: try again later`);
+    });
+
+
+    /**
+     * Creates new Contact Element
+     *
+     * @param contact
+     * @returns {*|jQuery|HTMLElement}
+     */
+    function createContact(contact) {
     // : Create li element and return
-    const li = $(`<li></li>`);
-    $(li).append(contact.name, `<br>`, contact.email, `<br>`, contact.phone);
-    return li;
-  }
+        const count = $(`li`).length;
+        console.log(count);
+        const li = $(`<li>&nbsp;&nbsp;</li>`);
+        $(li).append(`<strong>${contact.name}</strong><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`);
+        $(li).append(`${contact.phone}<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`);
+        $(li).append(`<em>${contact.email}</em>&nbsp;&nbsp;`);
+        $(li).append(`<button id="${contact._id}">Delete</button>`);
+            //TODO: btn classes not being applied to last instance
+
+        return li;
+    }
 
 
-  //: Handles new contact submit
+    /**
+     * Posts new contact to offline storage
+     *
+     * @param newContact
+     */
+    function postDataOffline(newContact){
+        //Add to offline storage
+        localData.put(newContact).then(function (result) {
+            console.log(`Successfully Posted to Offline Storage`);
+        }).catch(function (err) {
+            console.log(`ERROR:: Did not Post to Offline Storage`);
+            console.log(err);
+        });
+    }
+
+
+
+
+    /**
+     * Handles new contact submit
+     *
+     * @param ev
+     */
   function handleNewContactSubmit(ev) {
-    ev.preventDefault();
+     ev.preventDefault();
 
-    // : Validate email and phone
-    const contactName = $(`[id="inputName"]`).val();
-    const contactEmail = $(`[id="inputEmail"]`).val();
-    const contactPhone = $(`[id="inputPhone"]`).val();
-    if (!contactName) {
-      alert(`Please enter your name.`);
+     // : Validate email and phone
+     const contactName = $(`[id="inputName"]`).val();
+     const contactEmail = $(`[id="inputEmail"]`).val();
+     const contactPhone = $(`[id="inputPhone"]`).val();
+     if (!contactName) {
+         alert(`Please enter your name.`);
+     }
+     else if (!emailValidate.test(contactEmail)) {
+         alert(`Please enter valid email address.`);
+     }
+     else if (!phoneValidate.test(contactPhone)) {
+         alert(`Please enter a valid phone number`);
+     }
+     else {
+         // : Save to offline storage (PouchDB)
+         const newContact = {
+             _id: contactName,
+             name: contactName,
+             email: contactEmail,
+             phone: contactPhone
+         };
+         console.log(newContact);
+
+         postDataOffline(newContact);
+
+
+       // : Create contact (li element)
+         const newContactItem = createContact(newContact);
+
+       // : Append contact to ul#contactList
+         $(`#contactList`).append(newContactItem);
+     }
+        //add classes to button
+        $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
+        //attach delete handler
+        $(`.delete`).on(`click`, handleContactDelete);
     }
-    else if (!emailValidate.test(contactEmail)) {
-      alert(`Please enter valid email address.`);
+
+
+    /**
+     * :delete data off local db
+     * @param contactToDelete
+     */
+    function deleteData(contactToDelete) {
+        //todo: take logs out
+        console.log(`to be deleted: ${contactToDelete}`);
+        localData.get(contactToDelete).then(function (doc) {
+            console.log(doc);
+            return localData.remove(doc._id, doc._rev);
+        }).catch(function (er) {
+            console.log(er);
+            alert(`Error! Unable to delete contact!`);
+        })
     }
-    else if (!phoneValidate.test(contactPhone)) {
-      alert(`Please enter a valid phone number`);
+
+    /**TODO: delete content off db
+     * deletes contact
+     */
+    function handleContactDelete(ev){
+
+        ev.preventDefault();
+        console.log(ev);
+
+        const deletion = $(ev.target);
+        console.log(ev.target);
+        console.log(deletion);
+        const dataId = deletion.attr(`id`);
+        console.log(dataId);
+        deleteData(dataId);
+        deletion.parent().remove();
     }
-    else {
-      // : Save to offline storage (PouchDB)
-      const newContact = {
-        _id: contactName,
-        name: contactName,
-        email: contactEmail,
-        phone: contactPhone
-      };
-      console.log(newContact);
-
-      //Add to offline storage
-      localData.put(newContact).then(function (result) {
-        console.log(`Successfully Posted to Offline Storage`);
-      }).catch(function (err) {
-        console.log(`ERROR:: Did not Post to Offline Storage`);
-        console.log(err);
-      });
-
-
-      // : Create contact (li element)
-      const newContactItem = createContact(newContact);
-
-      // : Append contact to ul#contactList
-      $(`#contactList`).append(newContactItem);
-    }
-  }
 
   // : Load contacts from offline storage (PouchDB)
-  localData.allDocs({
-    include_docs: true,
-    attachments: true
-  }).then(function (result) {
-    $(result.rows).each(function () {
-      // : Create contacts for each record
-      const savedContact = createContact(this.doc);
-      // : Append contacts (li elements) to ul#contactList
-      $(`#contactList`).append(savedContact);
-    });
-  }).catch(function (err) {
-    console.log(`error loading saved contacts`);
-    console.log(err);
-  });
+    /**
+     * Loads Contacts from online or offline storage.
+     */
+    function loadContactsOffline() {
+        localData.allDocs({
+            include_docs: true,
+            attachments: true
+        }).then(function (result) {
+            console.log(result);
+            $(result.rows).each(function () {
+                // : Create contacts for each record
+                const savedContact = createContact(this.doc);
+                // : Append contacts (li elements) to ul#contactList
+                $(`#contactList`).append(savedContact);
+            });
+            $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
+            //attach delete handler
+            $(`.delete`).on(`click`, handleContactDelete);
+        }).catch(function (err) {
+            console.log(`error loading saved contacts`);
+            console.log(err);
+        });
+    }
 
+
+
+    // function loadContactsOnline(){
+    //     console.log("hello!");
+    //     try {
+    //         $.getJSON('http://localhost:3000/contacts', function (data) {
+    //             console.log(data);
+    //             console.log("test");
+    //             $.each(data, function (k, v) {
+    //                 console.log("test Loop");
+    //                 console.log(k);
+    //                 console.log(v);
+    //                 const savedContact = createContact(v);
+    //                 console.log(savedContact);
+    //                 $(`#contactList`).append(savedContact);
+    //                 $(`.delete`).on(`click`, handleContactDelete);
+    //             });
+    //             $(`button`).addClass(`btn btn-default btn-xs btn-danger delete`);
+    //             //attach delete handler
+    //             $(`.delete`).on(`click`, handleContactDelete);
+    //         });
+    //     }
+    //     catch (ex){
+    //         loadContactsOffline();
+    //         console.log(ex);
+    //     }
+    // }
+
+    //TODO: catch error and load online/offline if needed.
+    loadContactsOffline();
 
 
   // : Add submit event listener to form#contactForm and use handleNewContactSubmit
-  $(`#contactForm`).on(`submit`, handleNewContactSubmit);
+    $(`#contactForm`).on(`submit`, handleNewContactSubmit);
+
 });

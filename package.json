@@ -1,0 +1,14 @@
+{
+  "name": "contact-list",
+  "version": "1.0.0",
+  "description": "A contacat list that will store your data offline and online when available",
+  "main": "script.js",
+  "scripts": {
+    "start": "./node_modules/.bin/json-server --watch data.json"
+  },
+  "author": "Cory Kleiser <cory.kleiser@gmail.com>",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "json-server": "^0.8.14"
+  }
+}
